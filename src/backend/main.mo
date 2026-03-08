@@ -1,9 +1,9 @@
-import Array "mo:core/Array";
-import Iter "mo:core/Iter";
 import Text "mo:core/Text";
-import Runtime "mo:core/Runtime";
+import Iter "mo:core/Iter";
 import Order "mo:core/Order";
 import Time "mo:core/Time";
+import Array "mo:core/Array";
+import Runtime "mo:core/Runtime";
 
 
 
@@ -11,6 +11,9 @@ actor {
   type Signup = {
     name : Text;
     email : Text;
+    ageRange : Text;
+    country : Text;
+    gender : Text;
     timestamp : Int;
   };
 
@@ -28,43 +31,82 @@ actor {
   };
 
   stable var signups = Array.empty<Signup>();
+  stable var signupsBuffer = Array.empty<Signup>();
 
-  public shared ({ caller }) func submitSignup(name : Text, email : Text) : async Text {
-    if (name.isEmpty()) {
+  system func preupgrade() {
+    signups := Array.empty<Signup>();
+  };
+
+  system func postupgrade() {
+    signups := Array.empty<Signup>();
+  };
+
+  func validateInputs(name : Text, email : Text) {
+    if (name.trim(#char ' ') == "" or name.isEmpty()) {
       Runtime.trap("Name cannot be empty");
     };
 
-    if (email.isEmpty() or not email.contains(#char '@')) {
+    if (email.trim(#char ' ') == "" or email.isEmpty() or not email.contains(#char '@')) {
       Runtime.trap("Invalid email address");
     };
+  };
 
-    if (signups.any(func(s) { s.email == email })) {
+  public shared ({ caller }) func submitSignup(name : Text, email : Text) : async Text {
+    validateInputs(name, email);
+
+    if (signupsBuffer.any(func(s) { s.email == email })) {
       Runtime.trap("Email already signed up");
     };
 
     let newSignup : Signup = {
       name;
       email;
+      ageRange = "";
+      country = "";
+      gender = "";
       timestamp = Time.now();
     };
 
-    signups := signups.concat([newSignup]);
+    signupsBuffer := signupsBuffer.concat([newSignup]);
     "You're on the list! We'll be in touch.";
   };
 
+  public shared ({ caller }) func submitProfile(email : Text, ageRange : Text, country : Text, gender : Text) : async Text {
+    let updatedSignups = signupsBuffer.map(
+      func(signup) {
+        if (signup.email == email) {
+          { signup with ageRange; country; gender };
+        } else {
+          signup;
+        };
+      }
+    );
+
+    if (updatedSignups == signupsBuffer) {
+      Runtime.trap("Email not found");
+    } else {
+      signupsBuffer := updatedSignups;
+      "Profile information updated successfully!";
+    };
+  };
+
   public query ({ caller }) func isEmailRegistered(email : Text) : async Bool {
-    signups.any(func(s) { s.email == email });
+    signupsBuffer.any(func(s) { s.email == email });
   };
 
   public query ({ caller }) func getSignups() : async [Signup] {
-    signups;
+    signupsBuffer;
+  };
+
+  public query ({ caller }) func getSignupByEmail(email : Text) : async ?Signup {
+    signupsBuffer.find(func(s) { s.email == email });
   };
 
   public query ({ caller }) func getAllSignupsSorted() : async [Signup] {
-    signups.sort();
+    signupsBuffer.sort();
   };
 
   public query ({ caller }) func getAllSignupsSortedByEmail() : async [Signup] {
-    signups.sort(Signup.compareByEmail);
+    signupsBuffer.sort(Signup.compareByEmail);
   };
 };

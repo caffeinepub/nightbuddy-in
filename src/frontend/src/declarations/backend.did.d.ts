@@ -11,15 +11,20 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Signup {
+  'country' : string,
+  'ageRange' : string,
   'name' : string,
   'email' : string,
+  'gender' : string,
   'timestamp' : bigint,
 }
 export interface _SERVICE {
   'getAllSignupsSorted' : ActorMethod<[], Array<Signup>>,
   'getAllSignupsSortedByEmail' : ActorMethod<[], Array<Signup>>,
+  'getSignupByEmail' : ActorMethod<[string], [] | [Signup]>,
   'getSignups' : ActorMethod<[], Array<Signup>>,
   'isEmailRegistered' : ActorMethod<[string], boolean>,
+  'submitProfile' : ActorMethod<[string, string, string, string], string>,
   'submitSignup' : ActorMethod<[string, string], string>,
 }
 export declare const idlService: IDL.ServiceClass;

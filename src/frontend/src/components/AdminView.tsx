@@ -11,6 +11,7 @@ import {
 import {
   AlertCircle,
   Clock,
+  Globe,
   Inbox,
   Mail,
   RefreshCw,
@@ -100,7 +101,7 @@ export default function AdminView() {
               Early Access Signups
             </h1>
             <p className="text-sm" style={{ color: "oklch(0.60 0.06 275)" }}>
-              All collected name, email &amp; timestamp registrations
+              All collected user registrations
             </p>
           </div>
 
@@ -172,6 +173,18 @@ export default function AdminView() {
                   />
                   <Skeleton
                     className="h-9 flex-1 rounded-lg"
+                    style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
+                  />
+                  <Skeleton
+                    className="h-9 w-16 rounded-lg"
+                    style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
+                  />
+                  <Skeleton
+                    className="h-9 flex-1 rounded-lg"
+                    style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
+                  />
+                  <Skeleton
+                    className="h-9 w-20 rounded-lg"
                     style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
                   />
                   <Skeleton
@@ -275,6 +288,27 @@ export default function AdminView() {
                       </span>
                     </TableHead>
                     <TableHead
+                      className="py-3 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "oklch(0.55 0.08 280)" }}
+                    >
+                      Age Range
+                    </TableHead>
+                    <TableHead
+                      className="py-3 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "oklch(0.55 0.08 280)" }}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Globe size={12} />
+                        Country
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="py-3 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "oklch(0.55 0.08 280)" }}
+                    >
+                      Gender
+                    </TableHead>
+                    <TableHead
                       className="py-3 pr-6 text-xs font-semibold uppercase tracking-wider"
                       style={{ color: "oklch(0.55 0.08 280)" }}
                     >
@@ -314,6 +348,27 @@ export default function AdminView() {
                         style={{ color: "oklch(0.72 0.14 290)" }}
                       >
                         {signup.email}
+                      </TableCell>
+                      <TableCell
+                        className="py-3.5 text-xs"
+                        style={{
+                          color: "oklch(0.72 0.12 290)",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {signup.ageRange || "—"}
+                      </TableCell>
+                      <TableCell
+                        className="py-3.5 text-sm"
+                        style={{ color: "oklch(0.78 0.06 280)" }}
+                      >
+                        {signup.country || "—"}
+                      </TableCell>
+                      <TableCell
+                        className="py-3.5 text-xs"
+                        style={{ color: "oklch(0.65 0.06 280)" }}
+                      >
+                        {signup.gender || "—"}
                       </TableCell>
                       <TableCell
                         className="py-3.5 pr-6 text-xs"

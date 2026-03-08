@@ -9,16 +9,25 @@
 import { IDL } from '@icp-sdk/core/candid';
 
 export const Signup = IDL.Record({
+  'country' : IDL.Text,
+  'ageRange' : IDL.Text,
   'name' : IDL.Text,
   'email' : IDL.Text,
+  'gender' : IDL.Text,
   'timestamp' : IDL.Int,
 });
 
 export const idlService = IDL.Service({
   'getAllSignupsSorted' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
   'getAllSignupsSortedByEmail' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
+  'getSignupByEmail' : IDL.Func([IDL.Text], [IDL.Opt(Signup)], ['query']),
   'getSignups' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
   'isEmailRegistered' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'submitProfile' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
   'submitSignup' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
 });
 
@@ -26,16 +35,25 @@ export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
   const Signup = IDL.Record({
+    'country' : IDL.Text,
+    'ageRange' : IDL.Text,
     'name' : IDL.Text,
     'email' : IDL.Text,
+    'gender' : IDL.Text,
     'timestamp' : IDL.Int,
   });
   
   return IDL.Service({
     'getAllSignupsSorted' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
     'getAllSignupsSortedByEmail' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
+    'getSignupByEmail' : IDL.Func([IDL.Text], [IDL.Opt(Signup)], ['query']),
     'getSignups' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
     'isEmailRegistered' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'submitProfile' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
     'submitSignup' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   });
 };

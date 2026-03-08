@@ -9,23 +9,58 @@ import Problem from "./components/Problem";
 import Safety from "./components/Safety";
 
 const REGISTERED_KEY = "nightbuddy_registered";
+const PROFILE_KEY = "nightbuddy_profile_complete";
+const EMAIL_KEY = "nightbuddy_signup_email";
+
+/** Read and validate onboarding state from localStorage.
+ *  Rules:
+ *  - isRegistered requires both the flag AND a stored email — prevents
+ *    stale/incomplete localStorage from showing "Complete Profile" to
+ *    new visitors.
+ *  - isProfileComplete requires isRegistered to also be valid.
+ */
+function readOnboardingState() {
+  try {
+    const email = localStorage.getItem(EMAIL_KEY) || "";
+    const registered =
+      localStorage.getItem(REGISTERED_KEY) === "true" && email.trim() !== "";
+    const profileComplete =
+      registered && localStorage.getItem(PROFILE_KEY) === "true";
+    return { registered, profileComplete, email };
+  } catch {
+    return { registered: false, profileComplete: false, email: "" };
+  }
+}
 
 function LandingPage() {
-  const [isRegistered, setIsRegistered] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(REGISTERED_KEY) === "true";
-    } catch {
-      return false;
-    }
-  });
+  const initial = readOnboardingState();
 
-  const handleRegistered = () => {
+  const [isRegistered, setIsRegistered] = useState<boolean>(initial.registered);
+
+  const [isProfileComplete, setIsProfileComplete] = useState<boolean>(
+    initial.profileComplete,
+  );
+
+  const [signupEmail, setSignupEmail] = useState<string>(initial.email);
+
+  const handleRegistered = (email: string) => {
     try {
       localStorage.setItem(REGISTERED_KEY, "true");
+      localStorage.setItem(EMAIL_KEY, email);
     } catch {
       // ignore storage errors
     }
     setIsRegistered(true);
+    setSignupEmail(email);
+  };
+
+  const handleProfileComplete = () => {
+    try {
+      localStorage.setItem(PROFILE_KEY, "true");
+    } catch {
+      // ignore storage errors
+    }
+    setIsProfileComplete(true);
   };
 
   return (
@@ -56,7 +91,7 @@ function LandingPage() {
             <span style={{ color: "oklch(0.72 0.18 290)" }}>.in</span>
           </span>
         </div>
-        {isRegistered ? (
+        {isProfileComplete ? (
           <button
             data-ocid="nav.primary_button"
             type="button"
@@ -81,19 +116,25 @@ function LandingPage() {
               color: "oklch(0.78 0.16 290)",
             }}
           >
-            Get Early Access
+            {isRegistered ? "Complete Profile" : "Join Early Access"}
           </a>
         )}
       </nav>
 
       <main>
-        <Hero isRegistered={isRegistered} />
+        <Hero
+          isRegistered={isRegistered}
+          isProfileComplete={isProfileComplete}
+        />
         <Problem />
         <HowItWorks />
         <Safety />
         <EarlyAccessForm
           isRegistered={isRegistered}
+          isProfileComplete={isProfileComplete}
+          signupEmail={signupEmail}
           onRegistered={handleRegistered}
+          onProfileComplete={handleProfileComplete}
         />
       </main>
       <Footer />

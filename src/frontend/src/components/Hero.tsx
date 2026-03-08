@@ -13,9 +13,10 @@ const STARS = Array.from({ length: 60 }, (_, i) => ({
 
 interface HeroProps {
   isRegistered: boolean;
+  isProfileComplete: boolean;
 }
 
-export default function Hero({ isRegistered }: HeroProps) {
+export default function Hero({ isRegistered, isProfileComplete }: HeroProps) {
   const handleScrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
     const el = document.getElementById("early-access");
@@ -189,8 +190,8 @@ export default function Hero({ isRegistered }: HeroProps) {
           className="flex flex-wrap items-center justify-center gap-4"
           style={{ position: "relative", zIndex: 20 }}
         >
-          {isRegistered ? (
-            /* Registered user — show Start Chatting as primary */
+          {isProfileComplete ? (
+            /* Profile complete — show Start Chatting as primary */
             <button
               data-ocid="hero.primary_button"
               type="button"
@@ -233,6 +234,52 @@ export default function Hero({ isRegistered }: HeroProps) {
                 style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
               />
               Start Chatting
+            </button>
+          ) : isRegistered ? (
+            /* Signed up but profile not complete — show Complete Profile */
+            <button
+              data-ocid="hero.primary_button"
+              type="button"
+              onClick={handleScrollToForm}
+              style={{
+                position: "relative",
+                zIndex: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                fontWeight: 700,
+                borderRadius: "9999px",
+                padding: "1rem 2.5rem",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                color: "#ffffff",
+                background:
+                  "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
+                boxShadow:
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)",
+                border: "1px solid oklch(0.78 0.22 290 / 0.7)",
+                textShadow: "0 0 12px oklch(0.9 0.1 290 / 0.6)",
+                animation: "pulse-glow 3s ease-in-out infinite",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(-2px) scale(1.04)";
+                el.style.boxShadow =
+                  "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5), 0 6px 28px oklch(0.3 0.15 290 / 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(0) scale(1)";
+                el.style.boxShadow =
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)";
+              }}
+            >
+              <Moon
+                style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
+              />
+              Complete Profile
             </button>
           ) : (
             /* New visitor — show only Join Early Access */

@@ -90,17 +90,23 @@ export class ExternalBlob {
     }
 }
 export interface Signup {
+    country: string;
+    ageRange: string;
     name: string;
     email: string;
+    gender: string;
     timestamp: bigint;
 }
 export interface backendInterface {
     getAllSignupsSorted(): Promise<Array<Signup>>;
     getAllSignupsSortedByEmail(): Promise<Array<Signup>>;
+    getSignupByEmail(email: string): Promise<Signup | null>;
     getSignups(): Promise<Array<Signup>>;
     isEmailRegistered(email: string): Promise<boolean>;
+    submitProfile(email: string, ageRange: string, country: string, gender: string): Promise<string>;
     submitSignup(name: string, email: string): Promise<string>;
 }
+import type { Signup as _Signup } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async getAllSignupsSorted(): Promise<Array<Signup>> {
@@ -131,6 +137,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getSignupByEmail(arg0: string): Promise<Signup | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSignupByEmail(arg0);
+                return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSignupByEmail(arg0);
+            return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getSignups(): Promise<Array<Signup>> {
         if (this.processError) {
             try {
@@ -159,6 +179,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async submitProfile(arg0: string, arg1: string, arg2: string, arg3: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.submitProfile(arg0, arg1, arg2, arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.submitProfile(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
     async submitSignup(arg0: string, arg1: string): Promise<string> {
         if (this.processError) {
             try {
@@ -173,6 +207,9 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+}
+function from_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Signup]): Signup | null {
+    return value.length === 0 ? null : value[0];
 }
 export interface CreateActorOptions {
     agent?: Agent;
