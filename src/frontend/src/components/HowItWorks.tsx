@@ -1,30 +1,30 @@
-import { MessageCircleHeart, Smile, UserCheck } from "lucide-react";
+import { MessageSquare, Smile, Zap } from "lucide-react";
 import React from "react";
 
 const steps = [
   {
     number: "01",
-    icon: UserCheck,
-    title: "Sign up anonymously",
-    subtitle: "18+ only",
+    icon: MessageSquare,
+    title: "Start an anonymous chat",
+    subtitle: "No sign-up needed",
     description:
-      "No real name needed. Create a safe, anonymous profile in under a minute. Your identity stays protected.",
+      "Jump in with a tap — no real name, no phone number. Your identity stays completely private.",
   },
   {
     number: "02",
-    icon: Smile,
-    title: "Choose your mood",
-    subtitle: "How are you feeling?",
+    icon: Zap,
+    title: "Get matched with someone instantly",
+    subtitle: "Smart matching",
     description:
-      "Select how you're feeling right now — anxious, lonely, overwhelmed, or just need to vent. We match you accordingly.",
+      "Our system finds someone awake and ready to listen, matched to how you're feeling right now.",
   },
   {
     number: "03",
-    icon: MessageCircleHeart,
-    title: "Connect safely",
-    subtitle: "In minutes",
+    icon: Smile,
+    title: "Talk freely and feel lighter",
+    subtitle: "Judge-free zone",
     description:
-      "Get matched with a verified, trained listener who's awake and ready to hear you out — no judgment, just support.",
+      "Say what's on your mind. No advice unless you want it. Just someone who genuinely listens.",
   },
 ];
 

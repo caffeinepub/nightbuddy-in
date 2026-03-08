@@ -11,7 +11,11 @@ const STARS = Array.from({ length: 60 }, (_, i) => ({
   opacity: Math.random() * 0.6 + 0.2,
 }));
 
-export default function Hero() {
+interface HeroProps {
+  isRegistered: boolean;
+}
+
+export default function Hero({ isRegistered }: HeroProps) {
   const handleScrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
     const el = document.getElementById("early-access");
@@ -28,23 +32,35 @@ export default function Hero() {
           "linear-gradient(180deg, oklch(0.09 0.03 265) 0%, oklch(0.12 0.025 265) 40%, oklch(0.14 0.04 275) 100%)",
       }}
     >
-      {/* Hero background image */}
+      {/* Hero background image — cinematic rooftop night scene */}
       <div
-        className="absolute inset-0 opacity-20 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            "url(/assets/generated/hero-night-sky.dim_1200x600.png)",
+            "url(/assets/generated/hero-rooftop-night.dim_1600x900.jpg)",
           backgroundSize: "cover",
-          backgroundPosition: "center top",
+          backgroundPosition: "center bottom",
           backgroundRepeat: "no-repeat",
+          filter: "blur(0.8px)",
+          transform: "scale(1.03)",
           zIndex: 0,
         }}
       />
 
-      {/* Stars */}
+      {/* Dark gradient overlay — reduced to ~0.55 so new cinematic scene shows through */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.06 0.03 265 / 0.50) 0%, oklch(0.05 0.02 265 / 0.55) 55%, oklch(0.08 0.025 265 / 0.78) 100%)",
+          zIndex: 1,
+        }}
+      />
+
+      {/* CSS Stars */}
       <div
         className="absolute inset-0 overflow-hidden pointer-events-none"
-        style={{ zIndex: 1 }}
+        style={{ zIndex: 2 }}
       >
         {STARS.map((star) => (
           <div
@@ -70,7 +86,7 @@ export default function Hero() {
           background:
             "radial-gradient(circle, oklch(0.52 0.24 290 / 0.18) 0%, transparent 70%)",
           filter: "blur(40px)",
-          zIndex: 1,
+          zIndex: 2,
         }}
       />
       <div
@@ -79,7 +95,7 @@ export default function Hero() {
           background:
             "radial-gradient(circle, oklch(0.62 0.20 310 / 0.12) 0%, transparent 70%)",
           filter: "blur(30px)",
-          zIndex: 1,
+          zIndex: 2,
         }}
       />
 
@@ -149,71 +165,132 @@ export default function Hero() {
 
         {/* English subheadline */}
         <p
-          className="text-base sm:text-lg md:text-xl leading-relaxed mb-8 max-w-xl mx-auto"
-          style={{ color: "oklch(0.75 0.05 280)" }}
+          className="text-base sm:text-lg md:text-xl leading-relaxed mb-3 max-w-xl mx-auto"
+          style={{ color: "oklch(0.78 0.06 280)" }}
         >
-          NightBuddy connects you with verified anonymous listeners in minutes.
+          NightBuddy is a calm place where you can talk to someone who will
+          truly listen — anonymously.
         </p>
 
-        {/* CTA Button */}
+        {/* Emotional line */}
+        <p
+          className="text-sm sm:text-base leading-relaxed mb-9 max-w-sm mx-auto"
+          style={{
+            color: "oklch(0.62 0.10 295)",
+            fontStyle: "italic",
+            letterSpacing: "0.01em",
+          }}
+        >
+          Sometimes all we need is someone who understands.
+        </p>
+
+        {/* CTA Buttons */}
         <div
-          className="flex flex-col items-center gap-4"
+          className="flex flex-wrap items-center justify-center gap-4"
           style={{ position: "relative", zIndex: 20 }}
         >
-          <button
-            data-ocid="hero.primary_button"
-            type="button"
-            onClick={handleScrollToForm}
-            style={{
-              position: "relative",
-              zIndex: 20,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem",
-              fontWeight: 700,
-              borderRadius: "9999px",
-              padding: "1rem 2.5rem",
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              color: "#ffffff",
-              background:
-                "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
-              boxShadow:
-                "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4), 0 4px 20px oklch(0.3 0.15 290 / 0.5)",
-              border: "1px solid oklch(0.78 0.22 290 / 0.7)",
-              textShadow: "0 0 12px oklch(0.9 0.1 290 / 0.6)",
-              opacity: 1,
-              animation: "pulse-glow 3s ease-in-out infinite",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-2px) scale(1.04)";
-              el.style.boxShadow =
-                "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5), 0 6px 28px oklch(0.3 0.15 290 / 0.6)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(0) scale(1)";
-              el.style.boxShadow =
-                "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4), 0 4px 20px oklch(0.3 0.15 290 / 0.5)";
-            }}
-          >
-            <Moon
-              style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
-            />
-            Join Early Access
-          </button>
-
-          {/* Launch note */}
-          <p
-            className="text-sm font-medium"
-            style={{ color: "oklch(0.62 0.04 280)" }}
-          >
-            Launching Soon in India 🇮🇳
-          </p>
+          {isRegistered ? (
+            /* Registered user — show Start Chatting as primary */
+            <button
+              data-ocid="hero.primary_button"
+              type="button"
+              style={{
+                position: "relative",
+                zIndex: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                fontWeight: 700,
+                borderRadius: "9999px",
+                padding: "1rem 2.5rem",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                color: "#ffffff",
+                background:
+                  "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
+                boxShadow:
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)",
+                border: "1px solid oklch(0.78 0.22 290 / 0.7)",
+                textShadow: "0 0 12px oklch(0.9 0.1 290 / 0.6)",
+                animation: "pulse-glow 3s ease-in-out infinite",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(-2px) scale(1.04)";
+                el.style.boxShadow =
+                  "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5), 0 6px 28px oklch(0.3 0.15 290 / 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(0) scale(1)";
+                el.style.boxShadow =
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)";
+              }}
+            >
+              <Moon
+                style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
+              />
+              Start Chatting
+            </button>
+          ) : (
+            /* New visitor — show only Join Early Access */
+            <button
+              data-ocid="hero.primary_button"
+              type="button"
+              onClick={handleScrollToForm}
+              style={{
+                position: "relative",
+                zIndex: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                fontWeight: 700,
+                borderRadius: "9999px",
+                padding: "1rem 2.5rem",
+                fontSize: "1.1rem",
+                cursor: "pointer",
+                color: "#ffffff",
+                background:
+                  "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
+                boxShadow:
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)",
+                border: "1px solid oklch(0.78 0.22 290 / 0.7)",
+                textShadow: "0 0 12px oklch(0.9 0.1 290 / 0.6)",
+                opacity: 1,
+                animation: "pulse-glow 3s ease-in-out infinite",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(-2px) scale(1.04)";
+                el.style.boxShadow =
+                  "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5), 0 6px 28px oklch(0.3 0.15 290 / 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = "translateY(0) scale(1)";
+                el.style.boxShadow =
+                  "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4)";
+              }}
+            >
+              <Moon
+                style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
+              />
+              Join Early Access
+            </button>
+          )}
         </div>
+
+        {/* Subtle tagline */}
+        <p
+          className="text-sm font-medium mt-5 tracking-widest uppercase"
+          style={{ color: "oklch(0.52 0.06 280)" }}
+        >
+          Anonymous · Safe · Free
+        </p>
       </div>
 
       {/* Bottom fade */}
@@ -222,12 +299,15 @@ export default function Hero() {
         style={{
           background:
             "linear-gradient(to bottom, transparent, oklch(0.12 0.025 265))",
-          zIndex: 2,
+          zIndex: 3,
         }}
       />
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40">
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40"
+        style={{ zIndex: 10 }}
+      >
         <div
           className="w-0.5 h-8 rounded-full"
           style={{

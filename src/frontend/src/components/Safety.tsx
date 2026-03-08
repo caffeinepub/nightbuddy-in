@@ -55,7 +55,7 @@ export default function Safety() {
 
       <div className="container-max relative z-10">
         {/* Section header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <span
             className="inline-block text-xs font-semibold tracking-widest uppercase mb-3 px-4 py-1.5 rounded-full"
             style={{
@@ -64,20 +64,30 @@ export default function Safety() {
               border: "1px solid oklch(0.52 0.24 290 / 0.25)",
             }}
           >
-            Built for Trust
+            Safe & Anonymous
           </span>
           <h2
-            className="text-3xl sm:text-4xl font-bold leading-tight mb-4"
+            className="text-3xl sm:text-4xl font-bold leading-tight mb-5"
             style={{ color: "oklch(0.95 0.01 280)" }}
           >
-            Your Safety is Our Priority
+            Your privacy is sacred here
           </h2>
+
+          {/* Lead paragraph — prominently styled */}
           <p
-            className="text-base sm:text-lg max-w-md mx-auto"
-            style={{ color: "oklch(0.68 0.04 280)" }}
+            className="text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto font-medium"
+            style={{ color: "oklch(0.80 0.07 285)" }}
           >
-            We've built NightBuddy from the ground up with your safety and
-            privacy in mind.
+            Every conversation on NightBuddy is fully anonymous. No names, no
+            phone numbers —{" "}
+            <span
+              style={{
+                color: "oklch(0.88 0.12 295)",
+                fontWeight: 600,
+              }}
+            >
+              just two people talking, safely.
+            </span>
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AdminPasswordGate from "./components/AdminPasswordGate";
 import AdminView from "./components/AdminView";
 import EarlyAccessForm from "./components/EarlyAccessForm";
@@ -8,7 +8,26 @@ import HowItWorks from "./components/HowItWorks";
 import Problem from "./components/Problem";
 import Safety from "./components/Safety";
 
+const REGISTERED_KEY = "nightbuddy_registered";
+
 function LandingPage() {
+  const [isRegistered, setIsRegistered] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(REGISTERED_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleRegistered = () => {
+    try {
+      localStorage.setItem(REGISTERED_KEY, "true");
+    } catch {
+      // ignore storage errors
+    }
+    setIsRegistered(true);
+  };
+
   return (
     <div
       className="min-h-screen w-full overflow-x-hidden"
@@ -37,25 +56,45 @@ function LandingPage() {
             <span style={{ color: "oklch(0.72 0.18 290)" }}>.in</span>
           </span>
         </div>
-        <a
-          href="#early-access"
-          className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
-          style={{
-            background: "oklch(0.52 0.24 290 / 0.15)",
-            border: "1px solid oklch(0.52 0.24 290 / 0.30)",
-            color: "oklch(0.78 0.16 290)",
-          }}
-        >
-          Get Early Access
-        </a>
+        {isRegistered ? (
+          <button
+            data-ocid="nav.primary_button"
+            type="button"
+            className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.62 0.28 285 / 0.85), oklch(0.58 0.26 310 / 0.85))",
+              border: "1px solid oklch(0.72 0.22 290 / 0.5)",
+              color: "#ffffff",
+            }}
+          >
+            Start Chatting
+          </button>
+        ) : (
+          <a
+            href="#early-access"
+            data-ocid="nav.link"
+            className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
+            style={{
+              background: "oklch(0.52 0.24 290 / 0.15)",
+              border: "1px solid oklch(0.52 0.24 290 / 0.30)",
+              color: "oklch(0.78 0.16 290)",
+            }}
+          >
+            Get Early Access
+          </a>
+        )}
       </nav>
 
       <main>
-        <Hero />
+        <Hero isRegistered={isRegistered} />
         <Problem />
         <HowItWorks />
         <Safety />
-        <EarlyAccessForm />
+        <EarlyAccessForm
+          isRegistered={isRegistered}
+          onRegistered={handleRegistered}
+        />
       </main>
       <Footer />
     </div>
