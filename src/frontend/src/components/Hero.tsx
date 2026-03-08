@@ -30,18 +30,22 @@ export default function Hero() {
     >
       {/* Hero background image */}
       <div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
           backgroundImage:
             "url(/assets/generated/hero-night-sky.dim_1200x600.png)",
           backgroundSize: "cover",
           backgroundPosition: "center top",
           backgroundRepeat: "no-repeat",
+          zIndex: 0,
         }}
       />
 
       {/* Stars */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        style={{ zIndex: 1 }}
+      >
         {STARS.map((star) => (
           <div
             key={star.id}
@@ -66,6 +70,7 @@ export default function Hero() {
           background:
             "radial-gradient(circle, oklch(0.52 0.24 290 / 0.18) 0%, transparent 70%)",
           filter: "blur(40px)",
+          zIndex: 1,
         }}
       />
       <div
@@ -74,11 +79,15 @@ export default function Hero() {
           background:
             "radial-gradient(circle, oklch(0.62 0.20 310 / 0.12) 0%, transparent 70%)",
           filter: "blur(30px)",
+          zIndex: 1,
         }}
       />
 
       {/* Content */}
-      <div className="relative z-10 text-center px-5 max-w-3xl mx-auto">
+      <div
+        className="relative text-center px-5 max-w-3xl mx-auto"
+        style={{ zIndex: 10 }}
+      >
         {/* Logo icon */}
         <div className="flex justify-center mb-6">
           <div
@@ -147,13 +156,53 @@ export default function Hero() {
         </p>
 
         {/* CTA Button */}
-        <div className="flex flex-col items-center gap-4">
+        <div
+          className="flex flex-col items-center gap-4"
+          style={{ position: "relative", zIndex: 20 }}
+        >
           <button
+            data-ocid="hero.primary_button"
             type="button"
             onClick={handleScrollToForm}
-            className="btn-primary text-base sm:text-lg pulse-glow"
+            style={{
+              position: "relative",
+              zIndex: 20,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              fontWeight: 700,
+              borderRadius: "9999px",
+              padding: "1rem 2.5rem",
+              fontSize: "1.1rem",
+              cursor: "pointer",
+              color: "#ffffff",
+              background:
+                "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
+              boxShadow:
+                "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4), 0 4px 20px oklch(0.3 0.15 290 / 0.5)",
+              border: "1px solid oklch(0.78 0.22 290 / 0.7)",
+              textShadow: "0 0 12px oklch(0.9 0.1 290 / 0.6)",
+              opacity: 1,
+              animation: "pulse-glow 3s ease-in-out infinite",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.transform = "translateY(-2px) scale(1.04)";
+              el.style.boxShadow =
+                "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5), 0 6px 28px oklch(0.3 0.15 290 / 0.6)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.transform = "translateY(0) scale(1)";
+              el.style.boxShadow =
+                "0 0 30px oklch(0.62 0.26 290 / 0.8), 0 0 60px oklch(0.62 0.26 290 / 0.4), 0 4px 20px oklch(0.3 0.15 290 / 0.5)";
+            }}
           >
-            <Moon className="w-5 h-5" />
+            <Moon
+              style={{ width: "1.2rem", height: "1.2rem", flexShrink: 0 }}
+            />
             Join Early Access
           </button>
 
@@ -173,6 +222,7 @@ export default function Hero() {
         style={{
           background:
             "linear-gradient(to bottom, transparent, oklch(0.12 0.025 265))",
+          zIndex: 2,
         }}
       />
 
