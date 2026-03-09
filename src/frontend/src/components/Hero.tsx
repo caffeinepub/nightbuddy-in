@@ -147,7 +147,7 @@ export default function Hero({ isRegistered, isProfileComplete }: HeroProps) {
           />
         </div>
 
-        {/* Hindi headline */}
+        {/* Headline */}
         <h1
           className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-5"
           style={{
@@ -159,30 +159,23 @@ export default function Hero({ isRegistered, isProfileComplete }: HeroProps) {
             backgroundClip: "text",
           }}
         >
-          Raat ko kisi se
-          <br />
-          baat karni hai?
+          A safe place to talk, without judgment.
         </h1>
 
-        {/* English subheadline */}
+        {/* Subheadline */}
         <p
-          className="text-base sm:text-lg md:text-xl leading-relaxed mb-3 max-w-xl mx-auto"
+          className="text-base sm:text-lg md:text-xl leading-relaxed mb-4 max-w-xl mx-auto"
           style={{ color: "oklch(0.78 0.06 280)" }}
         >
-          NightBuddy is a calm place where you can talk to someone who will
-          truly listen — anonymously.
+          Speak freely and anonymously. Connect with someone who truly listens.
         </p>
 
-        {/* Emotional line */}
+        {/* Trust line */}
         <p
-          className="text-sm sm:text-base leading-relaxed mb-9 max-w-sm mx-auto"
-          style={{
-            color: "oklch(0.62 0.10 295)",
-            fontStyle: "italic",
-            letterSpacing: "0.01em",
-          }}
+          className="text-xs sm:text-sm font-medium tracking-wider mb-9 max-w-sm mx-auto"
+          style={{ color: "oklch(0.60 0.10 295)" }}
         >
-          Sometimes all we need is someone who understands.
+          Anonymous&nbsp;•&nbsp;No Judgment&nbsp;•&nbsp;Safe Conversations
         </p>
 
         {/* CTA Buttons */}
@@ -330,14 +323,6 @@ export default function Hero({ isRegistered, isProfileComplete }: HeroProps) {
             </button>
           )}
         </div>
-
-        {/* Subtle tagline */}
-        <p
-          className="text-sm font-medium mt-5 tracking-widest uppercase"
-          style={{ color: "oklch(0.52 0.06 280)" }}
-        >
-          Anonymous · Safe · Free
-        </p>
       </div>
 
       {/* Bottom fade */}

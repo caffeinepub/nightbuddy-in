@@ -49,16 +49,6 @@ export default function Problem() {
       <div className="container-max relative z-10">
         {/* Section header */}
         <div className="text-center mb-12">
-          <span
-            className="inline-block text-xs font-semibold tracking-widest uppercase mb-3 px-4 py-1.5 rounded-full"
-            style={{
-              color: "oklch(0.72 0.18 290)",
-              background: "oklch(0.52 0.24 290 / 0.12)",
-              border: "1px solid oklch(0.52 0.24 290 / 0.25)",
-            }}
-          >
-            You're Not Alone
-          </span>
           <h2
             className="text-3xl sm:text-4xl font-bold leading-tight mb-4"
             style={{ color: "oklch(0.95 0.01 280)" }}
