@@ -7,7 +7,7 @@ import {
   User,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useGetSignups,
   useSubmitProfile,
@@ -141,6 +141,30 @@ export default function EarlyAccessForm({
   const { data: signups, isLoading: isCountLoading } = useGetSignups();
   const signupCount = signups?.length ?? 0;
 
+  // Fade-in animation state — triggers whenever the visible step changes
+  const [cardVisible, setCardVisible] = useState(true);
+  const prevStepRef = useRef<"signup" | "profile" | "success">(
+    isProfileComplete ? "success" : isRegistered ? "profile" : "signup",
+  );
+
+  const currentStep = isProfileComplete
+    ? "success"
+    : isRegistered
+      ? "profile"
+      : "signup";
+
+  useEffect(() => {
+    if (prevStepRef.current !== currentStep) {
+      prevStepRef.current = currentStep;
+      // Trigger re-mount fade-in: hide → show
+      setCardVisible(false);
+      const raf = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setCardVisible(true));
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [currentStep]);
+
   const validateEmail = (value: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -180,21 +204,32 @@ export default function EarlyAccessForm({
         setStep1Errors({});
         onRegistered(email.trim());
       } else if (
-        msg.includes("still connecting") ||
-        msg.includes("not available") ||
-        msg.includes("please refresh")
+        msg.includes("connecting") ||
+        msg.includes("please try again") ||
+        msg.includes("please wait")
       ) {
-        setStep1Errors({ email: raw });
+        setStep1Errors({
+          email: "Still connecting — please wait a moment and try again.",
+        });
+      } else if (
+        msg.includes("unable to reach") ||
+        msg.includes("please refresh") ||
+        msg.includes("not available")
+      ) {
+        setStep1Errors({
+          email: "Unable to reach the server. Please refresh the page.",
+        });
       } else if (
         msg.includes("name cannot be empty") ||
-        msg.includes("invalid email")
+        msg.includes("invalid email") ||
+        msg.includes("name is required")
       ) {
         setStep1Errors({ email: raw });
       } else {
         console.error("[NightBuddy signup error]", raw);
         setStep1Errors({
           email:
-            "Couldn't connect to the server. Please wait a moment and try again.",
+            "Something went wrong. Please check your connection and try again.",
         });
       }
     }
@@ -349,6 +384,9 @@ export default function EarlyAccessForm({
             style={{
               boxShadow:
                 "0 8px 40px rgba(0,0,0,0.4), 0 0 60px oklch(0.52 0.24 290 / 0.08)",
+              opacity: cardVisible ? 1 : 0,
+              transform: cardVisible ? "translateY(0)" : "translateY(10px)",
+              transition: "opacity 0.35s ease, transform 0.35s ease",
             }}
           >
             {/* ── STEP 3: SUCCESS ── */}
@@ -376,16 +414,17 @@ export default function EarlyAccessForm({
 
                 <div className="flex flex-col gap-2 max-w-xs">
                   <p
-                    className="text-lg font-semibold leading-snug"
+                    className="text-xl font-bold leading-snug"
                     style={{ color: "oklch(0.92 0.02 280)" }}
                   >
-                    You're all set! NightBuddy is ready for you.
+                    Account Created!
                   </p>
                   <p
                     className="text-sm"
                     style={{ color: "oklch(0.58 0.06 280)" }}
                   >
-                    We'll notify you when new features launch.
+                    Your NightBuddy profile is ready. Start your first anonymous
+                    conversation.
                   </p>
                 </div>
 

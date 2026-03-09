@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { type MutableRefObject, useRef } from "react";
+import type { backendInterface } from "../backend";
 import type { Signup } from "../backend";
 import { useActor } from "./useActor";
 
@@ -14,22 +16,64 @@ function extractTrapMessage(err: unknown): string {
   return raw;
 }
 
+/**
+ * Polls a ref for a non-null actor value, waiting up to `timeoutMs` with
+ * `intervalMs` between checks. Resolves with the actor or rejects with a
+ * user-friendly message.
+ */
+function waitForActor(
+  actorRef: MutableRefObject<backendInterface | null>,
+  isFetchingRef: MutableRefObject<boolean>,
+  timeoutMs = 8000,
+  intervalMs = 500,
+): Promise<backendInterface> {
+  return new Promise((resolve, reject) => {
+    if (actorRef.current) {
+      resolve(actorRef.current);
+      return;
+    }
+
+    const start = Date.now();
+    const timer = setInterval(() => {
+      if (actorRef.current) {
+        clearInterval(timer);
+        resolve(actorRef.current);
+        return;
+      }
+      if (Date.now() - start >= timeoutMs) {
+        clearInterval(timer);
+        if (isFetchingRef.current) {
+          reject(new Error("connecting — please wait a moment and try again."));
+        } else {
+          reject(
+            new Error(
+              "Unable to reach the server. Please refresh the page and try again.",
+            ),
+          );
+        }
+      }
+    }, intervalMs);
+  });
+}
+
 export function useSubmitSignup() {
   const { actor, isFetching } = useActor();
   const queryClient = useQueryClient();
 
+  // Always hold the latest actor and isFetching values so the mutationFn
+  // closure can access them even when they change after render.
+  const actorRef = useRef<backendInterface | null>(actor);
+  actorRef.current = actor;
+  const isFetchingRef = useRef(isFetching);
+  isFetchingRef.current = isFetching;
+
   return useMutation({
     mutationFn: async ({ name, email }: { name: string; email: string }) => {
-      if (!actor) {
-        if (isFetching) {
-          throw new Error(
-            "Still connecting to backend. Please try again in a moment.",
-          );
-        }
-        throw new Error("Backend not available. Please refresh and try again.");
-      }
+      // Wait up to 8 s for the actor to initialise (handles fast submits on
+      // first page load before the canister connection is established).
+      const resolvedActor = await waitForActor(actorRef, isFetchingRef);
       try {
-        const result = await actor.submitSignup(name, email);
+        const result = await resolvedActor.submitSignup(name, email);
         // Backend may return "Error: ..." strings for validation failures
         if (typeof result === "string" && result.startsWith("Error:")) {
           throw new Error(result.replace(/^Error:\s*/, ""));
@@ -51,6 +95,11 @@ export function useSubmitProfile() {
   const { actor, isFetching } = useActor();
   const queryClient = useQueryClient();
 
+  const actorRef = useRef<backendInterface | null>(actor);
+  actorRef.current = actor;
+  const isFetchingRef = useRef(isFetching);
+  isFetchingRef.current = isFetching;
+
   return useMutation({
     mutationFn: async ({
       email,
@@ -63,16 +112,9 @@ export function useSubmitProfile() {
       country: string;
       gender: string;
     }) => {
-      if (!actor) {
-        if (isFetching) {
-          throw new Error(
-            "Still connecting to backend. Please try again in a moment.",
-          );
-        }
-        throw new Error("Backend not available. Please refresh and try again.");
-      }
+      const resolvedActor = await waitForActor(actorRef, isFetchingRef);
       try {
-        const result = await actor.submitProfile(
+        const result = await resolvedActor.submitProfile(
           email,
           ageRange,
           country,

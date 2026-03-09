@@ -11,22 +11,56 @@ import Safety from "./components/Safety";
 const REGISTERED_KEY = "nightbuddy_registered";
 const PROFILE_KEY = "nightbuddy_profile_complete";
 const EMAIL_KEY = "nightbuddy_signup_email";
+// Bump this version string whenever the onboarding flow changes to
+// automatically clear stale localStorage from previous deployments.
+const ONBOARDING_VERSION = "v3";
+const VERSION_KEY = "nightbuddy_onboarding_version";
+
+/** Validate that a string looks like a real email address. */
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
 
 /** Read and validate onboarding state from localStorage.
  *  Rules:
- *  - isRegistered requires both the flag AND a stored email — prevents
- *    stale/incomplete localStorage from showing "Complete Profile" to
- *    new visitors.
+ *  - If the stored onboarding version doesn't match ONBOARDING_VERSION,
+ *    all keys are wiped and the user is treated as a brand-new visitor.
+ *  - isRegistered requires: flag === "true" AND a valid-format email.
  *  - isProfileComplete requires isRegistered to also be valid.
  */
 function readOnboardingState() {
   try {
-    const email = localStorage.getItem(EMAIL_KEY) || "";
-    const registered =
-      localStorage.getItem(REGISTERED_KEY) === "true" && email.trim() !== "";
-    const profileComplete =
-      registered && localStorage.getItem(PROFILE_KEY) === "true";
-    return { registered, profileComplete, email };
+    // Version gate — clears stale state from previous deployments
+    const storedVersion = localStorage.getItem(VERSION_KEY);
+    if (storedVersion !== ONBOARDING_VERSION) {
+      localStorage.removeItem(REGISTERED_KEY);
+      localStorage.removeItem(PROFILE_KEY);
+      localStorage.removeItem(EMAIL_KEY);
+      localStorage.setItem(VERSION_KEY, ONBOARDING_VERSION);
+      return { registered: false, profileComplete: false, email: "" };
+    }
+
+    const email = localStorage.getItem(EMAIL_KEY) ?? "";
+    const registeredFlag = localStorage.getItem(REGISTERED_KEY);
+    const profileFlag = localStorage.getItem(PROFILE_KEY);
+
+    // Both the flag AND a valid email must be present
+    const registered = registeredFlag === "true" && isValidEmail(email);
+
+    // Profile complete only valid when signup is also valid
+    const profileComplete = registered && profileFlag === "true";
+
+    // Repair inconsistent state: if registered is false but partial keys
+    // exist, remove them so nothing leaks through
+    if (!registered) {
+      localStorage.removeItem(REGISTERED_KEY);
+      localStorage.removeItem(PROFILE_KEY);
+      localStorage.removeItem(EMAIL_KEY);
+    } else if (!profileComplete) {
+      localStorage.removeItem(PROFILE_KEY);
+    }
+
+    return { registered, profileComplete, email: registered ? email : "" };
   } catch {
     return { registered: false, profileComplete: false, email: "" };
   }
@@ -45,6 +79,7 @@ function LandingPage() {
 
   const handleRegistered = (email: string) => {
     try {
+      localStorage.setItem(VERSION_KEY, ONBOARDING_VERSION);
       localStorage.setItem(REGISTERED_KEY, "true");
       localStorage.setItem(EMAIL_KEY, email);
     } catch {
@@ -56,6 +91,7 @@ function LandingPage() {
 
   const handleProfileComplete = () => {
     try {
+      localStorage.setItem(VERSION_KEY, ONBOARDING_VERSION);
       localStorage.setItem(PROFILE_KEY, "true");
     } catch {
       // ignore storage errors
@@ -95,6 +131,10 @@ function LandingPage() {
           <button
             data-ocid="nav.primary_button"
             type="button"
+            onClick={() => {
+              const el = document.getElementById("early-access");
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
             className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
             style={{
               background:

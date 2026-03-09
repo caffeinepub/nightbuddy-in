@@ -188,6 +188,7 @@ export default function Hero({ isRegistered, isProfileComplete }: HeroProps) {
             <button
               data-ocid="hero.primary_button"
               type="button"
+              onClick={handleScrollToForm}
               style={{
                 position: "relative",
                 zIndex: 20,
