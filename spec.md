@@ -2,56 +2,47 @@
 
 ## Current State
 
-The landing page has a working 2-step onboarding flow (Name+Email → Profile Setup) with a password-protected admin panel at /admin. The frontend UI, dark theme, rooftop illustration, and all design elements are complete and should NOT be changed.
+The onboarding flow is a multi-step inline form on the landing page:
+1. Step 1: Name + Email signup
+2. Step 2: Profile setup (Age, Gender, Country)
+3. Step 3 (success): "Account Created Successfully" screen with a "Start Chatting" button
 
-**Root problems identified:**
+After Step 3 the user sees a glow button that says "Start Chatting" but goes nowhere (no routing).
 
-1. **Backend data loss bug**: The `preupgrade` and `postupgrade` lifecycle hooks both call `Array.empty<Signup>()` which clears `signups` (an unused variable). The actual data lives in `signupsBuffer` which has no stable migration hooks — meaning data survives within a single session but is lost on any canister upgrade/redeploy.
-
-2. **Actor initialization race condition**: The `waitForActor` polling timeout is 8 seconds. On ICP cold starts this can be insufficient. After timeout, a generic error is shown.
-
-3. **No User ID field**: The database stores name, email, ageRange, country, gender, timestamp — but no unique userId. Requirement asks for a userId.
-
-4. **submitProfile fails silently if email not found**: Uses `Runtime.trap` which throws an unhandled error on the frontend.
+The backend stores: name, email, ageRange, country, gender, timestamp, userId.
+Admin panel exists at `/admin` (password-gated).
+No routing library is present — `window.location.pathname` is used for `/admin` detection.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Unique userId field (auto-generated) to the Signup record stored in backend
-- getSignupCount query function for the counter display
-- Proper stable data persistence using a single `stable var` with correct upgrade hooks
+- A new `ChooseRole` screen/component that appears immediately after the success screen ("Account Created Successfully").
+- The screen shows two large selectable cards:
+  - Card 1: "I want someone to listen to me" → Role = USER
+  - Card 2: "I want to help and listen to others" → Role = LISTENER
+- After selecting a role, save it to localStorage (key: `nightbuddy_role`).
+- After selection redirect:
+  - USER → navigate to `/user-dashboard`
+  - LISTENER → navigate to `/listener-dashboard`
+- A `UserDashboard` page at `/user-dashboard` with: Start Chat, Find a Listener, My Conversations, Edit Profile, Logout.
+- A `ListenerDashboard` page at `/listener-dashboard` with: Incoming Chat Requests, Active Conversations, Completed Chats, Listener Profile, Ratings (placeholder).
+- Both dashboards use the same NightBuddy dark theme.
+- Routing for `/user-dashboard`, `/listener-dashboard` added to `App.tsx`.
+- New localStorage key: `nightbuddy_role` (values: `"USER"` | `"LISTENER"`).
 
 ### Modify
-- Fix `preupgrade` / `postupgrade` hooks to properly preserve data across upgrades (remove the data-wiping `Array.empty` calls, use a single stable array as the source of truth)
-- Extend waitForActor timeout from 8s to 15s and add progressive retry messaging
-- Improve error handling: show spinner if backend is still loading, only show actual error if server definitively fails
-- Success screen copy: "Account Created Successfully" / "Your NightBuddy profile is ready."
-- Admin panel: display userId column
+- `EarlyAccessForm.tsx`: In the success (Step 3) view, replace the "Start Chatting" button with a "Choose Your Role" button that transitions to the `ChooseRole` view.
+- `App.tsx`: Add routing for `/user-dashboard` and `/listener-dashboard` paths.
+- `readOnboardingState()` in `App.tsx`: read `nightbuddy_role` key so returning users skip role selection.
+- The `ChooseRole` component should also be reachable if `isProfileComplete` is true but no role has been saved yet.
 
 ### Remove
-- The unused `signups` stable variable (confusing dual-variable pattern)
-- The `signupsBuffer` naming (replace with single clear `stableSignups` variable)
+- Nothing is removed. Existing signup flow, admin panel, and all existing components remain intact.
 
 ## Implementation Plan
 
-1. Rewrite `src/backend/main.mo`:
-   - Single stable `stableSignups` array as source of truth
-   - Remove broken preupgrade/postupgrade hooks (or make them correctly no-ops)
-   - Add `userId` field (Text, generated from timestamp + random)
-   - Add `getSignupCount` query
-   - Keep all existing function signatures intact so frontend bindings don't break
-   - Improve `submitProfile` to handle email-not-found gracefully
-
-2. Update `src/frontend/src/hooks/useQueries.ts`:
-   - Increase waitForActor timeout to 15 seconds
-   - While waiting (isFetching), show loading state not error
-   - After timeout, show a clear retry message
-   - Add `useGetSignupCount` hook
-
-3. Update `src/frontend/src/components/EarlyAccessForm.tsx`:
-   - Use `useGetSignupCount` instead of full `useGetSignups` for the counter
-   - During form submission while backend is loading: show spinner, not error
-   - Success screen: update copy to "Account Created Successfully" / "Your NightBuddy profile is ready."
-
-4. Update `src/frontend/src/components/AdminView.tsx`:
-   - Add userId column to the table
+1. Create `ChooseRole.tsx` — full-screen role selection UI with two large cards, matching dark night theme, saves role to localStorage and redirects.
+2. Create `UserDashboard.tsx` — placeholder dashboard page for USER role.
+3. Create `ListenerDashboard.tsx` — placeholder dashboard page for LISTENER role.
+4. Modify `EarlyAccessForm.tsx` — pass `onRoleSelect` callback; success screen shows "Choose Your Role" button instead of "Start Chatting".
+5. Modify `App.tsx` — add routes for `/user-dashboard`, `/listener-dashboard`, handle `nightbuddy_role` state, show `ChooseRole` when profile is complete but no role saved yet.
