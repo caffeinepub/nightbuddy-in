@@ -13,6 +13,7 @@ import type { Principal } from '@icp-sdk/core/principal';
 export interface Signup {
   'country' : string,
   'ageRange' : string,
+  'userId' : string,
   'name' : string,
   'email' : string,
   'gender' : string,
@@ -22,6 +23,8 @@ export interface _SERVICE {
   'getAllSignupsSorted' : ActorMethod<[], Array<Signup>>,
   'getAllSignupsSortedByEmail' : ActorMethod<[], Array<Signup>>,
   'getSignupByEmail' : ActorMethod<[string], [] | [Signup]>,
+  'getSignupCount' : ActorMethod<[], bigint>,
+  'getSignupCountForCountry' : ActorMethod<[string], bigint>,
   'getSignups' : ActorMethod<[], Array<Signup>>,
   'isEmailRegistered' : ActorMethod<[string], boolean>,
   'submitProfile' : ActorMethod<[string, string, string, string], string>,

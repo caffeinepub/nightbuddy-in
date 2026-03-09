@@ -1,12 +1,12 @@
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Order "mo:core/Order";
-import Time "mo:core/Time";
 import Array "mo:core/Array";
+import Time "mo:core/Time";
 import Runtime "mo:core/Runtime";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   type Signup = {
     name : Text;
@@ -15,6 +15,7 @@ actor {
     country : Text;
     gender : Text;
     timestamp : Int;
+    userId : Text;
   };
 
   module Signup {
@@ -31,15 +32,6 @@ actor {
   };
 
   stable var signups = Array.empty<Signup>();
-  stable var signupsBuffer = Array.empty<Signup>();
-
-  system func preupgrade() {
-    signups := Array.empty<Signup>();
-  };
-
-  system func postupgrade() {
-    signups := Array.empty<Signup>();
-  };
 
   func validateInputs(name : Text, email : Text) {
     if (name.trim(#char ' ') == "" or name.isEmpty()) {
@@ -54,9 +46,12 @@ actor {
   public shared ({ caller }) func submitSignup(name : Text, email : Text) : async Text {
     validateInputs(name, email);
 
-    if (signupsBuffer.any(func(s) { s.email == email })) {
+    if (signups.any(func(s) { s.email == email })) {
       Runtime.trap("Email already signed up");
     };
+
+    let timestamp = Time.now();
+    let userId = "user_" # timestamp.toText();
 
     let newSignup : Signup = {
       name;
@@ -64,17 +59,20 @@ actor {
       ageRange = "";
       country = "";
       gender = "";
-      timestamp = Time.now();
+      timestamp;
+      userId;
     };
 
-    signupsBuffer := signupsBuffer.concat([newSignup]);
+    signups := signups.concat([newSignup]);
     "You're on the list! We'll be in touch.";
   };
 
   public shared ({ caller }) func submitProfile(email : Text, ageRange : Text, country : Text, gender : Text) : async Text {
-    let updatedSignups = signupsBuffer.map(
+    var found = false;
+    let updatedSignups = signups.map(
       func(signup) {
         if (signup.email == email) {
+          found := true;
           { signup with ageRange; country; gender };
         } else {
           signup;
@@ -82,31 +80,39 @@ actor {
       }
     );
 
-    if (updatedSignups == signupsBuffer) {
-      Runtime.trap("Email not found");
-    } else {
-      signupsBuffer := updatedSignups;
+    if (found) {
+      signups := updatedSignups;
       "Profile information updated successfully!";
+    } else {
+      Runtime.trap("Email not found");
     };
   };
 
   public query ({ caller }) func isEmailRegistered(email : Text) : async Bool {
-    signupsBuffer.any(func(s) { s.email == email });
+    signups.any(func(s) { s.email == email });
   };
 
   public query ({ caller }) func getSignups() : async [Signup] {
-    signupsBuffer;
+    signups;
   };
 
   public query ({ caller }) func getSignupByEmail(email : Text) : async ?Signup {
-    signupsBuffer.find(func(s) { s.email == email });
+    signups.find(func(s) { s.email == email });
   };
 
   public query ({ caller }) func getAllSignupsSorted() : async [Signup] {
-    signupsBuffer.sort();
+    signups.sort();
   };
 
   public query ({ caller }) func getAllSignupsSortedByEmail() : async [Signup] {
-    signupsBuffer.sort(Signup.compareByEmail);
+    signups.sort(Signup.compareByEmail);
+  };
+
+  public query ({ caller }) func getSignupCount() : async Nat {
+    signups.size();
+  };
+
+  public query ({ caller }) func getSignupCountForCountry(country : Text) : async Nat {
+    signups.filter(func(signup) { signup.country == country }).size();
   };
 };

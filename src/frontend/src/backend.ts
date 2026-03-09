@@ -92,6 +92,7 @@ export class ExternalBlob {
 export interface Signup {
     country: string;
     ageRange: string;
+    userId: string;
     name: string;
     email: string;
     gender: string;
@@ -101,6 +102,8 @@ export interface backendInterface {
     getAllSignupsSorted(): Promise<Array<Signup>>;
     getAllSignupsSortedByEmail(): Promise<Array<Signup>>;
     getSignupByEmail(email: string): Promise<Signup | null>;
+    getSignupCount(): Promise<bigint>;
+    getSignupCountForCountry(country: string): Promise<bigint>;
     getSignups(): Promise<Array<Signup>>;
     isEmailRegistered(email: string): Promise<boolean>;
     submitProfile(email: string, ageRange: string, country: string, gender: string): Promise<string>;
@@ -149,6 +152,34 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getSignupByEmail(arg0);
             return from_candid_opt_n1(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getSignupCount(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSignupCount();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSignupCount();
+            return result;
+        }
+    }
+    async getSignupCountForCountry(arg0: string): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getSignupCountForCountry(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getSignupCountForCountry(arg0);
+            return result;
         }
     }
     async getSignups(): Promise<Array<Signup>> {

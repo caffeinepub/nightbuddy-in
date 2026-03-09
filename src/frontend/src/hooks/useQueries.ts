@@ -4,6 +4,13 @@ import type { backendInterface } from "../backend";
 import type { Signup } from "../backend";
 import { useActor } from "./useActor";
 
+/** Thrown when the actor is still initialising at timeout. */
+class ActorLoadingError extends Error {
+  constructor() {
+    super("__loading__");
+  }
+}
+
 function extractTrapMessage(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err);
   // Canister trap messages are embedded in rejection strings like:
@@ -24,7 +31,7 @@ function extractTrapMessage(err: unknown): string {
 function waitForActor(
   actorRef: MutableRefObject<backendInterface | null>,
   isFetchingRef: MutableRefObject<boolean>,
-  timeoutMs = 8000,
+  timeoutMs = 15000,
   intervalMs = 500,
 ): Promise<backendInterface> {
   return new Promise((resolve, reject) => {
@@ -43,7 +50,8 @@ function waitForActor(
       if (Date.now() - start >= timeoutMs) {
         clearInterval(timer);
         if (isFetchingRef.current) {
-          reject(new Error("connecting — please wait a moment and try again."));
+          // Backend is still loading — signal the form to show a spinner
+          reject(new ActorLoadingError());
         } else {
           reject(
             new Error(
@@ -69,7 +77,7 @@ export function useSubmitSignup() {
 
   return useMutation({
     mutationFn: async ({ name, email }: { name: string; email: string }) => {
-      // Wait up to 8 s for the actor to initialise (handles fast submits on
+      // Wait up to 15 s for the actor to initialise (handles fast submits on
       // first page load before the canister connection is established).
       const resolvedActor = await waitForActor(actorRef, isFetchingRef);
       try {
@@ -80,6 +88,8 @@ export function useSubmitSignup() {
         }
         return result;
       } catch (err) {
+        // Re-throw ActorLoadingError as-is so callers can detect it
+        if (err instanceof ActorLoadingError) throw err;
         // Re-throw with cleaned-up trap message
         throw new Error(extractTrapMessage(err));
       }
@@ -87,6 +97,8 @@ export function useSubmitSignup() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["signups"] });
       queryClient.refetchQueries({ queryKey: ["signups"] });
+      queryClient.invalidateQueries({ queryKey: ["signupCount"] });
+      queryClient.refetchQueries({ queryKey: ["signupCount"] });
     },
   });
 }
@@ -125,12 +137,15 @@ export function useSubmitProfile() {
         }
         return result;
       } catch (err) {
+        if (err instanceof ActorLoadingError) throw err;
         throw new Error(extractTrapMessage(err));
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["signups"] });
       queryClient.refetchQueries({ queryKey: ["signups"] });
+      queryClient.invalidateQueries({ queryKey: ["signupCount"] });
+      queryClient.refetchQueries({ queryKey: ["signupCount"] });
     },
   });
 }
@@ -144,6 +159,20 @@ export function useGetSignups() {
       if (!actor) throw new Error("Actor not ready");
       const results = await actor.getSignups();
       return results;
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetSignupCount() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<number>({
+    queryKey: ["signupCount"],
+    queryFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      const count = await actor.getSignupCount();
+      return Number(count);
     },
     enabled: !!actor && !isFetching,
   });

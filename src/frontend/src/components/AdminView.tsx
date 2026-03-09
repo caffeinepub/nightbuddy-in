@@ -22,7 +22,7 @@ import React from "react";
 import { useGetSignups } from "../hooks/useQueries";
 
 function formatTimestamp(timestamp: bigint): string {
-  if (timestamp === 0n) return "—";
+  if (timestamp === 0n) return "\u2014";
   try {
     // Backend stores nanoseconds; convert to milliseconds
     const ms = Number(timestamp / 1_000_000n);
@@ -34,7 +34,7 @@ function formatTimestamp(timestamp: bigint): string {
       minute: "2-digit",
     });
   } catch {
-    return "—";
+    return "\u2014";
   }
 }
 
@@ -62,7 +62,7 @@ export default function AdminView() {
         }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg">🌙</span>
+          <span className="text-lg">\uD83C\uDF19</span>
           <span
             className="font-bold text-base tracking-wide"
             style={{ color: "oklch(0.90 0.04 280)" }}
@@ -86,11 +86,11 @@ export default function AdminView() {
           className="text-xs font-medium transition-colors"
           style={{ color: "oklch(0.65 0.08 280)" }}
         >
-          ← Back to site
+          \u2190 Back to site
         </a>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-12">
+      <main className="max-w-6xl mx-auto px-4 py-12">
         {/* Page title + stats */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -120,8 +120,10 @@ export default function AdminView() {
                 style={{ color: "oklch(0.88 0.06 280)" }}
               >
                 {isLoading
-                  ? "—"
-                  : `${signups?.length ?? 0} signup${(signups?.length ?? 0) !== 1 ? "s" : ""}`}
+                  ? "\u2014"
+                  : `${signups?.length ?? 0} signup${
+                      (signups?.length ?? 0) !== 1 ? "s" : ""
+                    }`}
               </span>
             </div>
 
@@ -165,6 +167,10 @@ export default function AdminView() {
                 <div key={i} className="flex gap-4">
                   <Skeleton
                     className="h-9 w-8 rounded-lg"
+                    style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
+                  />
+                  <Skeleton
+                    className="h-9 w-28 rounded-lg"
                     style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
                   />
                   <Skeleton
@@ -275,6 +281,15 @@ export default function AdminView() {
                     >
                       <span className="flex items-center gap-1.5">
                         <User size={12} />
+                        User ID
+                      </span>
+                    </TableHead>
+                    <TableHead
+                      className="py-3 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: "oklch(0.55 0.08 280)" }}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <User size={12} />
                         Name
                       </span>
                     </TableHead>
@@ -338,6 +353,18 @@ export default function AdminView() {
                         {index + 1}
                       </TableCell>
                       <TableCell
+                        className="py-3.5 text-xs font-mono"
+                        style={{
+                          color: "oklch(0.48 0.06 275)",
+                          whiteSpace: "nowrap",
+                          maxWidth: "120px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {signup.userId || "\u2014"}
+                      </TableCell>
+                      <TableCell
                         className="py-3.5 text-sm font-medium"
                         style={{ color: "oklch(0.88 0.05 280)" }}
                       >
@@ -356,19 +383,19 @@ export default function AdminView() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {signup.ageRange || "—"}
+                        {signup.ageRange || "\u2014"}
                       </TableCell>
                       <TableCell
                         className="py-3.5 text-sm"
                         style={{ color: "oklch(0.78 0.06 280)" }}
                       >
-                        {signup.country || "—"}
+                        {signup.country || "\u2014"}
                       </TableCell>
                       <TableCell
                         className="py-3.5 text-xs"
                         style={{ color: "oklch(0.65 0.06 280)" }}
                       >
-                        {signup.gender || "—"}
+                        {signup.gender || "\u2014"}
                       </TableCell>
                       <TableCell
                         className="py-3.5 pr-6 text-xs"

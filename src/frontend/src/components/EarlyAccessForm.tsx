@@ -9,7 +9,7 @@ import {
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import {
-  useGetSignups,
+  useGetSignupCount,
   useSubmitProfile,
   useSubmitSignup,
 } from "../hooks/useQueries";
@@ -22,7 +22,7 @@ interface EarlyAccessFormProps {
   onProfileComplete: () => void;
 }
 
-const AGE_RANGES = ["18–24", "25–34", "35–44", "45+"];
+const AGE_RANGES = ["18\u201324", "25\u201334", "35\u201344", "45+"];
 const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
 
 // Shared button pill style for selector groups
@@ -91,7 +91,7 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 }) {
                   : "none",
               }}
             >
-              {isDone ? "✓" : step}
+              {isDone ? "\u2713" : step}
             </div>
             {step < 2 && (
               <div
@@ -136,10 +136,12 @@ export default function EarlyAccessForm({
     general?: string;
   }>({});
 
+  // Whether Step 1 is in a "still loading" state (show spinner, not error text)
+  const [isStep1Connecting, setIsStep1Connecting] = useState(false);
+
   const submitSignup = useSubmitSignup();
   const submitProfile = useSubmitProfile();
-  const { data: signups, isLoading: isCountLoading } = useGetSignups();
-  const signupCount = signups?.length ?? 0;
+  const { data: signupCount, isLoading: isCountLoading } = useGetSignupCount();
 
   // Fade-in animation state — triggers whenever the visible step changes
   const [cardVisible, setCardVisible] = useState(true);
@@ -168,7 +170,7 @@ export default function EarlyAccessForm({
   const validateEmail = (value: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  // ── Step 1 submit ────────────────────────────────────────────────────────────
+  // ── Step 1 submit ────────────────────────────────────────────────────────────────────────────
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: { name?: string; email?: string } = {};
@@ -178,6 +180,8 @@ export default function EarlyAccessForm({
       errs.email = "Please enter a valid email address.";
     setStep1Errors(errs);
     if (Object.keys(errs).length > 0) return;
+
+    setIsStep1Connecting(false);
 
     try {
       const result = await submitSignup.mutateAsync({
@@ -189,10 +193,26 @@ export default function EarlyAccessForm({
       setName("");
       setEmail("");
       setStep1Errors({});
+      setIsStep1Connecting(false);
       onRegistered(email.trim());
     } catch (err: unknown) {
       const raw = err instanceof Error ? err.message : String(err);
       const msg = raw.toLowerCase();
+
+      // If backend is still loading — show spinner state, not error text
+      if (
+        raw === "__loading__" ||
+        msg.includes("__loading__") ||
+        msg.includes("connecting") ||
+        msg.includes("please wait")
+      ) {
+        setIsStep1Connecting(true);
+        setStep1Errors({});
+        return;
+      }
+
+      setIsStep1Connecting(false);
+
       if (
         msg.includes("already signed up") ||
         msg.includes("email already") ||
@@ -204,17 +224,8 @@ export default function EarlyAccessForm({
         setStep1Errors({});
         onRegistered(email.trim());
       } else if (
-        msg.includes("connecting") ||
-        msg.includes("please try again") ||
-        msg.includes("please wait")
-      ) {
-        setStep1Errors({
-          email: "Still connecting — please wait a moment and try again.",
-        });
-      } else if (
         msg.includes("unable to reach") ||
-        msg.includes("please refresh") ||
-        msg.includes("not available")
+        msg.includes("please refresh")
       ) {
         setStep1Errors({
           email: "Unable to reach the server. Please refresh the page.",
@@ -228,14 +239,13 @@ export default function EarlyAccessForm({
       } else {
         console.error("[NightBuddy signup error]", raw);
         setStep1Errors({
-          email:
-            "Something went wrong. Please check your connection and try again.",
+          email: "Something went wrong. Please try again.",
         });
       }
     }
   };
 
-  // ── Step 2 submit ────────────────────────────────────────────────────────────
+  // ── Step 2 submit ────────────────────────────────────────────────────────────────────────────
   const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: { ageRange?: string; country?: string; general?: string } = {};
@@ -266,7 +276,7 @@ export default function EarlyAccessForm({
     onProfileComplete();
   };
 
-  // ── Shared input style helpers ────────────────────────────────────────────────
+  // ── Shared input style helpers ───────────────────────────────────────────────────────────────────────────────
   const inputStyle = (hasError: boolean): React.CSSProperties => ({
     background: "oklch(0.10 0.02 265)",
     border: hasError
@@ -285,10 +295,8 @@ export default function EarlyAccessForm({
     textShadow: "0 0 10px oklch(0.9 0.1 290 / 0.4)",
   };
 
-  // ── Determine current step ───────────────────────────────────────────────────
-  // step 1: !isRegistered
-  // step 2: isRegistered && !isProfileComplete
-  // step 3: isProfileComplete
+  // Derive whether the step-1 submit button is in a loading/connecting state
+  const isStep1Pending = submitSignup.isPending || isStep1Connecting;
 
   return (
     <section
@@ -353,7 +361,7 @@ export default function EarlyAccessForm({
                     className="h-7 w-52 rounded-full animate-pulse"
                     style={{ background: "oklch(0.20 0.03 270 / 0.5)" }}
                   />
-                ) : signupCount > 0 ? (
+                ) : signupCount !== undefined && signupCount > 0 ? (
                   <div
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium"
                     style={{
@@ -361,7 +369,7 @@ export default function EarlyAccessForm({
                       border: "1px solid oklch(0.52 0.24 290 / 0.22)",
                     }}
                   >
-                    <span className="text-base">🌙</span>
+                    <span className="text-base">\uD83C\uDF19</span>
                     <span style={{ color: "oklch(0.68 0.04 280)" }}>
                       <span
                         className="font-bold"
@@ -417,14 +425,13 @@ export default function EarlyAccessForm({
                     className="text-xl font-bold leading-snug"
                     style={{ color: "oklch(0.92 0.02 280)" }}
                   >
-                    Account Created!
+                    Account Created Successfully
                   </p>
                   <p
                     className="text-sm"
                     style={{ color: "oklch(0.58 0.06 280)" }}
                   >
-                    Your NightBuddy profile is ready. Start your first anonymous
-                    conversation.
+                    Your NightBuddy profile is ready.
                   </p>
                 </div>
 
@@ -775,23 +782,42 @@ export default function EarlyAccessForm({
                   )}
                 </div>
 
+                {/* Connecting spinner — shown instead of error when backend is still loading */}
+                {isStep1Connecting && (
+                  <div
+                    data-ocid="signup.loading_state"
+                    className="flex items-center justify-center gap-2 py-1"
+                  >
+                    <Loader2
+                      className="w-4 h-4 animate-spin"
+                      style={{ color: "oklch(0.72 0.18 290)" }}
+                    />
+                    <span
+                      className="text-xs"
+                      style={{ color: "oklch(0.65 0.08 280)" }}
+                    >
+                      Connecting to server…
+                    </span>
+                  </div>
+                )}
+
                 {/* Submit button */}
                 <button
                   data-ocid="signup.submit_button"
                   type="submit"
-                  disabled={submitSignup.isPending}
+                  disabled={isStep1Pending}
                   className="w-full py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-1"
                   style={{
                     ...submitBtnStyle,
-                    boxShadow: submitSignup.isPending
+                    boxShadow: isStep1Pending
                       ? "none"
                       : "0 0 24px oklch(0.62 0.26 290 / 0.5), 0 0 48px oklch(0.62 0.26 290 / 0.25)",
                   }}
                 >
-                  {submitSignup.isPending ? (
+                  {isStep1Pending ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Joining…
+                      {isStep1Connecting ? "Connecting…" : "Joining…"}
                     </>
                   ) : (
                     "Join the Waitlist"

@@ -11,6 +11,7 @@ import { IDL } from '@icp-sdk/core/candid';
 export const Signup = IDL.Record({
   'country' : IDL.Text,
   'ageRange' : IDL.Text,
+  'userId' : IDL.Text,
   'name' : IDL.Text,
   'email' : IDL.Text,
   'gender' : IDL.Text,
@@ -21,6 +22,8 @@ export const idlService = IDL.Service({
   'getAllSignupsSorted' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
   'getAllSignupsSortedByEmail' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
   'getSignupByEmail' : IDL.Func([IDL.Text], [IDL.Opt(Signup)], ['query']),
+  'getSignupCount' : IDL.Func([], [IDL.Nat], ['query']),
+  'getSignupCountForCountry' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
   'getSignups' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
   'isEmailRegistered' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'submitProfile' : IDL.Func(
@@ -37,6 +40,7 @@ export const idlFactory = ({ IDL }) => {
   const Signup = IDL.Record({
     'country' : IDL.Text,
     'ageRange' : IDL.Text,
+    'userId' : IDL.Text,
     'name' : IDL.Text,
     'email' : IDL.Text,
     'gender' : IDL.Text,
@@ -47,6 +51,8 @@ export const idlFactory = ({ IDL }) => {
     'getAllSignupsSorted' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
     'getAllSignupsSortedByEmail' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
     'getSignupByEmail' : IDL.Func([IDL.Text], [IDL.Opt(Signup)], ['query']),
+    'getSignupCount' : IDL.Func([], [IDL.Nat], ['query']),
+    'getSignupCountForCountry' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     'getSignups' : IDL.Func([], [IDL.Vec(Signup)], ['query']),
     'isEmailRegistered' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'submitProfile' : IDL.Func(

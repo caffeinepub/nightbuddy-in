@@ -10,6 +10,7 @@ export type Option<T> = Some<T> | None;
 export interface Signup {
     country: string;
     ageRange: string;
+    userId: string;
     name: string;
     email: string;
     gender: string;
@@ -19,6 +20,8 @@ export interface backendInterface {
     getAllSignupsSorted(): Promise<Array<Signup>>;
     getAllSignupsSortedByEmail(): Promise<Array<Signup>>;
     getSignupByEmail(email: string): Promise<Signup | null>;
+    getSignupCount(): Promise<bigint>;
+    getSignupCountForCountry(country: string): Promise<bigint>;
     getSignups(): Promise<Array<Signup>>;
     isEmailRegistered(email: string): Promise<boolean>;
     submitProfile(email: string, ageRange: string, country: string, gender: string): Promise<string>;
