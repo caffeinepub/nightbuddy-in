@@ -7,13 +7,16 @@ import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import Problem from "./components/Problem";
 import Safety from "./components/Safety";
+import ChooseRole from "./pages/ChooseRole";
+import ListenerDashboard from "./pages/ListenerDashboard";
+import UserDashboard from "./pages/UserDashboard";
 
 const REGISTERED_KEY = "nightbuddy_registered";
 const PROFILE_KEY = "nightbuddy_profile_complete";
 const EMAIL_KEY = "nightbuddy_signup_email";
 // Bump this version string whenever the onboarding flow changes to
 // automatically clear stale localStorage from previous deployments.
-const ONBOARDING_VERSION = "v3";
+const ONBOARDING_VERSION = "v4";
 const VERSION_KEY = "nightbuddy_onboarding_version";
 
 /** Validate that a string looks like a real email address. */
@@ -64,6 +67,15 @@ function readOnboardingState() {
   } catch {
     return { registered: false, profileComplete: false, email: "" };
   }
+}
+
+/**
+ * Returns true only if the user has fully completed both signup steps.
+ * Used to guard protected routes like /choose-role.
+ */
+function hasCompletedOnboarding(): boolean {
+  const { profileComplete } = readOnboardingState();
+  return profileComplete;
 }
 
 function LandingPage() {
@@ -127,38 +139,22 @@ function LandingPage() {
             <span style={{ color: "oklch(0.72 0.18 290)" }}>.in</span>
           </span>
         </div>
-        {isProfileComplete ? (
-          <button
-            data-ocid="nav.primary_button"
-            type="button"
-            onClick={() => {
-              const el = document.getElementById("early-access");
-              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-            className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.62 0.28 285 / 0.85), oklch(0.58 0.26 310 / 0.85))",
-              border: "1px solid oklch(0.72 0.22 290 / 0.5)",
-              color: "#ffffff",
-            }}
-          >
-            Start Chatting
-          </button>
-        ) : (
-          <a
-            href="#early-access"
-            data-ocid="nav.link"
-            className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
-            style={{
-              background: "oklch(0.52 0.24 290 / 0.15)",
-              border: "1px solid oklch(0.52 0.24 290 / 0.30)",
-              color: "oklch(0.78 0.16 290)",
-            }}
-          >
-            {isRegistered ? "Complete Profile" : "Join Early Access"}
-          </a>
-        )}
+        <a
+          href="#early-access"
+          data-ocid="nav.link"
+          className="text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200"
+          style={{
+            background: "oklch(0.52 0.24 290 / 0.15)",
+            border: "1px solid oklch(0.52 0.24 290 / 0.30)",
+            color: "oklch(0.78 0.16 290)",
+          }}
+        >
+          {isRegistered && isProfileComplete
+            ? "Choose Your Role"
+            : isRegistered
+              ? "Complete Profile"
+              : "Join Early Access"}
+        </a>
       </nav>
 
       <main>
@@ -183,14 +179,41 @@ function LandingPage() {
 }
 
 export default function App() {
-  const isAdmin = window.location.pathname === "/admin";
+  const path = window.location.pathname;
 
-  if (isAdmin) {
+  if (path === "/admin") {
     return (
       <AdminPasswordGate>
         <AdminView />
       </AdminPasswordGate>
     );
+  }
+
+  // Guard: /choose-role is only accessible after completing the full onboarding flow.
+  // If a user visits it directly without signing up, redirect to the landing page.
+  if (path === "/choose-role") {
+    if (!hasCompletedOnboarding()) {
+      window.location.replace("/");
+      return null;
+    }
+    return <ChooseRole />;
+  }
+
+  // Guard: dashboards require role selection (i.e. full onboarding must be done).
+  if (path === "/user-dashboard") {
+    if (!hasCompletedOnboarding()) {
+      window.location.replace("/");
+      return null;
+    }
+    return <UserDashboard />;
+  }
+
+  if (path === "/listener-dashboard") {
+    if (!hasCompletedOnboarding()) {
+      window.location.replace("/");
+      return null;
+    }
+    return <ListenerDashboard />;
   }
 
   return <LandingPage />;

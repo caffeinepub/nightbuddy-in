@@ -155,6 +155,16 @@ export default function EarlyAccessForm({
       ? "profile"
       : "signup";
 
+  // Auto-redirect to Choose Your Role after profile completion
+  useEffect(() => {
+    if (isProfileComplete) {
+      const timer = setTimeout(() => {
+        window.location.href = "/choose-role";
+      }, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [isProfileComplete]);
+
   useEffect(() => {
     if (prevStepRef.current !== currentStep) {
       prevStepRef.current = currentStep;
@@ -336,7 +346,7 @@ export default function EarlyAccessForm({
               style={{ color: "oklch(0.95 0.01 280)" }}
             >
               {isProfileComplete
-                ? "You're all set!"
+                ? "Account Created!"
                 : isRegistered
                   ? "One more thing..."
                   : "Welcome to NightBuddy"}
@@ -346,7 +356,7 @@ export default function EarlyAccessForm({
               style={{ color: "oklch(0.68 0.04 280)" }}
             >
               {isProfileComplete
-                ? "NightBuddy is ready for you."
+                ? "Taking you to choose your role..."
                 : isRegistered
                   ? "Tell us a little about yourself. This helps us make NightBuddy better for you."
                   : "Tell us a little about you so we can let you know when NightBuddy opens."}
@@ -397,7 +407,7 @@ export default function EarlyAccessForm({
               transition: "opacity 0.35s ease, transform 0.35s ease",
             }}
           >
-            {/* ── STEP 3: SUCCESS ── */}
+            {/* ── STEP 3: SUCCESS — auto-redirecting to Choose Role ── */}
             {isProfileComplete ? (
               <div
                 data-ocid="signup.success_state"
@@ -435,49 +445,14 @@ export default function EarlyAccessForm({
                   </p>
                 </div>
 
-                {/* Start Chatting CTA */}
-                <button
-                  data-ocid="signup.primary_button"
-                  type="button"
-                  style={{
-                    marginTop: "0.5rem",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "0.5rem",
-                    fontWeight: 700,
-                    borderRadius: "9999px",
-                    padding: "0.875rem 2.25rem",
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                    color: "#ffffff",
-                    background:
-                      "linear-gradient(135deg, oklch(0.62 0.28 285), oklch(0.58 0.26 310), oklch(0.65 0.24 330))",
-                    boxShadow:
-                      "0 0 28px oklch(0.62 0.26 290 / 0.75), 0 0 56px oklch(0.62 0.26 290 / 0.35)",
-                    border: "1px solid oklch(0.78 0.22 290 / 0.6)",
-                    textShadow: "0 0 10px oklch(0.9 0.1 290 / 0.5)",
-                    animation: "pulse-glow 3s ease-in-out infinite",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = "translateY(-2px) scale(1.04)";
-                    el.style.boxShadow =
-                      "0 0 40px oklch(0.68 0.28 290 / 0.9), 0 0 80px oklch(0.68 0.28 290 / 0.5)";
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = "translateY(0) scale(1)";
-                    el.style.boxShadow =
-                      "0 0 28px oklch(0.62 0.26 290 / 0.75), 0 0 56px oklch(0.62 0.26 290 / 0.35)";
-                  }}
+                {/* Redirecting indicator */}
+                <div
+                  className="flex items-center gap-2 mt-2"
+                  style={{ color: "oklch(0.68 0.08 290)" }}
                 >
-                  <Moon
-                    style={{ width: "1rem", height: "1rem", flexShrink: 0 }}
-                  />
-                  Start Chatting
-                </button>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Setting up your experience...</span>
+                </div>
               </div>
             ) : isRegistered ? (
               /* ── STEP 2: PROFILE SETUP ── */
